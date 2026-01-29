@@ -174,7 +174,18 @@ MIT License
 - 问题反馈：[GitHub Issues](https://github.com/summer-8848/zhihu-ai-summary/issues)
 - 功能建议：欢迎提交 Issue 或 Pull Request
 - 贡献代码：Fork 本项目后提交 PR
+
 - 提交到Chrome应用商店：由于向[Chrome应用商店](https://chromewebstore.google.com/)发布应用需通过认证流程，该流程较为繁琐。如需使用，可自行Fork代码并提交至应用商店。
+
+## 联系作者
+
+如果你对项目有任何疑问，或者想进行技术交流，欢迎添加作者微信：
+
+<div align="center">
+  <img src="wechat_qr.jpg" width="200" alt="作者微信二维码">
+  <br>
+  <sub>（备注：知乎AI助手）</sub>
+</div>
 
 ---
 
