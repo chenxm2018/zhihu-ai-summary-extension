@@ -148,16 +148,6 @@ A: 在设置面板中：
 MIT License
 
 
-## 联系作者
 
-如果你对项目有任何疑问，或者想进行技术交流，欢迎添加作者微信：
-
-<div align="center">
-  <img src="wechat_qr.jpg" width="200" alt="作者微信二维码">
-  <br>
-  <sub>（备注：知乎AI助手）</sub>
-</div>
-
----
 
 **享受 AI 智能总结带来的高效阅读体验！** 🚀
