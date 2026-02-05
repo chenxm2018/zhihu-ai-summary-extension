@@ -138,7 +138,41 @@
         .zhihu-ai-chat-send-btn:hover { transform: scale(1.1); box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4); }
         .zhihu-ai-chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .zhihu-ai-chat-send-btn svg { width: 18px; height: 18px; }
+        /* 模式切换样式 */
+        .zhihu-ai-mode-switcher { display: flex; gap: 8px; margin-bottom: 12px; padding: 8px; background: #f5f5f5; border-radius: 8px; }
+        .zhihu-ai-mode-btn { flex: 1; padding: 8px 12px; border: 2px solid transparent; border-radius: 6px; background: white; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        .zhihu-ai-mode-btn:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
+        .zhihu-ai-mode-btn.active.strict { border-color: #667eea; background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); color: #667eea; }
+        .zhihu-ai-mode-btn.active.free { border-color: #52c41a; background: linear-gradient(135deg, #52c41a15 0%, #389e0d15 100%); color: #52c41a; }
+        .zhihu-ai-mode-indicator { font-size: 12px; color: #666; padding: 4px 8px; background: #f0f0f0; border-radius: 4px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .zhihu-ai-mode-indicator.strict { background: #667eea15; color: #667eea; border-left: 3px solid #667eea; }
+        .zhihu-ai-mode-indicator.free { background: #52c41a15; color: #52c41a; border-left: 3px solid #52c41a; }
+        .zhihu-ai-chat-container.strict { border-top-color: #667eea; }
+        .zhihu-ai-chat-container.free { border-top-color: #52c41a; }
     `;
+
+    // Mode Prompts for chat feature
+    const STRICT_MODE_PROMPT = `你是一个专业的内容分析助手。用户会基于之前的总结向你追问，请结合原文内容与已给出的总结回答。使用Markdown，回答简洁准确。
+
+重要约束：
+- 只依据原文与已给出的总结，不做外延推断；不确定则说明"原文未说明"。
+- 若用户的问题需要定位原文证据，请引用原文短句（≤20字）作为依据。
+- 严格基于文章内容，不要引入任何外部知识。`;
+
+    const FREE_MODE_PROMPT = `你是一个知识渊博的AI助手。用户刚读完一篇文章，可能会向你提问文章相关的背景知识、延伸概念或对比分析。
+
+你的任务：
+- 可以自由使用你的知识库回答问题，不局限于文章内容
+- 当回答涉及外部知识时，明确标注"[通用知识]"或"根据业界实践"
+- 如果问题与文章相关，优先结合文章总结+外部知识综合回答
+- 保持专业、准确、简洁的回答风格
+- 使用Markdown格式，结构清晰
+
+回答框架建议：
+1. 如果问题在文章总结中有答案，先引用总结内容
+2. 然后补充外部知识或背景信息
+3. 如纯外部知识问题，直接回答并注明这是基于通用知识的解释`;
+
 
     // Markdown Parser Class
     class MarkdownParser {
@@ -770,12 +804,98 @@
             // 显示聊天区域
             chatContainer.style.display = 'block';
 
-            // 构建初始对话历史
-            const conversationHistory = [
-                { role: 'system', content: '你是一个专业的内容分析助手。用户会基于之前的总结向你追问，请结合原文内容与已给出的总结回答。使用Markdown，回答简洁准确。\n\n重要约束：\n- 只依据原文与已给出的总结，不做外延推断；不确定则说明“原文未说明”。\n- 若用户的问题需要定位原文证据，请引用原文短句（≤20字）作为依据。' },
-                { role: 'user', content: this.apiClient.generatePrompt(originalContent, type) },
-                { role: 'assistant', content: initialSummary }
-            ];
+            // 模式状态（默认严格模式）
+            let currentMode = 'strict';
+            let conversationHistory = [];
+
+            // 创建模式切换器UI
+            const modeSwitcher = document.createElement('div');
+            modeSwitcher.className = 'zhihu-ai-mode-switcher';
+            modeSwitcher.innerHTML = `
+                <button class="zhihu-ai-mode-btn active strict" data-mode="strict">
+                    📄 严格模式
+                </button>
+                <button class="zhihu-ai-mode-btn free" data-mode="free">
+                    💡 自由模式
+                </button>
+            `;
+            chatContainer.insertBefore(modeSwitcher, chatMessages);
+
+            // 创建模式指示器
+            const modeIndicator = document.createElement('div');
+            modeIndicator.className = 'zhihu-ai-mode-indicator strict';
+            modeIndicator.innerHTML = '📄 当前：严格模式（仅回答文章内容）';
+            chatContainer.insertBefore(modeIndicator, chatMessages);
+
+            // 初始化对话历史的函数
+            const initConversationHistory = (mode) => {
+                if (mode === 'strict') {
+                    // 严格模式：包含完整原文
+                    return [
+                        { role: 'system', content: STRICT_MODE_PROMPT },
+                        { role: 'user', content: this.apiClient.generatePrompt(originalContent, type) },
+                        { role: 'assistant', content: initialSummary }
+                    ];
+                } else {
+                    // 自由模式：仅包含总结
+                    return [
+                        { role: 'system', content: FREE_MODE_PROMPT },
+                        { role: 'user', content: `我刚读了一篇文章，以下是AI的总结:\n\n${initialSummary}\n\n如果你的回答需要原文信息但总结中没有，请说明"总结未涉及此内容"。` },
+                        { role: 'assistant', content: '好的，我了解了这篇文章的内容。您有什么问题吗？' }
+                    ];
+                }
+            };
+
+            // 初始化为严格模式
+            conversationHistory = initConversationHistory('strict');
+
+            // 模式切换事件
+            const modeButtons = modeSwitcher.querySelectorAll('.zhihu-ai-mode-btn');
+            modeButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const newMode = btn.dataset.mode;
+                    if (newMode === currentMode) return;
+
+                    // 更新模式
+                    currentMode = newMode;
+
+                    // 更新按钮状态
+                    modeButtons.forEach(b => b.classList.remove('active', 'strict', 'free'));
+                    btn.classList.add('active', newMode);
+
+                    // 更新容器样式
+                    chatContainer.classList.remove('strict', 'free');
+                    chatContainer.classList.add(newMode);
+
+                    // 更新指示器
+                    modeIndicator.className = `zhihu-ai-mode-indicator ${newMode}`;
+                    if (newMode === 'strict') {
+                        modeIndicator.innerHTML = '📄 当前：严格模式（仅回答文章内容）';
+                    } else {
+                        modeIndicator.innerHTML = '💡 当前：自由模式（可询问任何相关知识）';
+                    }
+
+                    // 清空现有对话
+                    chatMessages.innerHTML = '';
+
+                    // 重新初始化对话历史
+                    conversationHistory = initConversationHistory(newMode);
+
+                    // 提示用户
+                    const switchTip = document.createElement('div');
+                    switchTip.className = 'zhihu-ai-chat-message ai';
+                    switchTip.style.fontSize = '12px';
+                    switchTip.style.opacity = '0.8';
+                    switchTip.textContent = newMode === 'strict' 
+                        ? '已切换到严格模式，我将只基于文章原文回答问题。'
+                        : '已切换到自由模式，我可以回答任何相关问题，包括背景知识和对比分析。';
+                    chatMessages.appendChild(switchTip);
+                });
+            });
+
+            // 设置初始容器样式
+            chatContainer.classList.add('strict');
+
 
             // 自动调整输入框高度
             chatInput.addEventListener('input', () => {
