@@ -40,7 +40,7 @@
     };
     const LONGCAT_PRESET_URL = 'https://api.longcat.chat/openai/v1/chat/completions';
     const LONGCAT_PRESET_MODEL = 'LongCat-Flash-Chat';
-    const LONGCAT_PRESET_KEY = 'ak_2EI0IS1KB2pz84D4hk2Yg2527H03C';
+    const LONGCAT_PRESET_KEY = ''; // 请填入你的 LongCat Key
 
     function toDateKey(date = new Date()) {
         const y = date.getFullYear();

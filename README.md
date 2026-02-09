@@ -167,7 +167,7 @@ A: 在设置面板中：
 ### v2.0 (2026-02-10)
 - Major version update
 - Updated memory and storage mechanisms (更新了记忆和存储机制)
-- 发布提醒：当前版本按需求包含明文 key，公开发布前请先替换为本地注入方案
+
 
 ### v1.3.1 (2026-02-09)
 - 新增 LongCat 一键接入能力（账号管理支持“一键添加 LongCat”）
