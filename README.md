@@ -165,16 +165,8 @@ A: 在设置面板中：
 ## 更新日志
 
 ### v2.0 (2026-02-10)
-- Major version update
-- Updated memory and storage mechanisms (更新了记忆和存储机制)
-
-
-### v1.3.1 (2026-02-09)
-- 新增 LongCat 一键接入能力（账号管理支持“一键添加 LongCat”）
-- 新增 LongCat 预设填充（URL/Key/Model），并保留多账号兼容
-- popup 新增账号提供商状态展示，LongCat 账号显示“已启用 LongCat 直连”
-- 增强连接失败提示，增加 LongCat endpoint/key 定位信息
-- 发布提醒：当前版本按需求包含明文 key，公开发布前请先替换为本地注入方案
+- 更新了长记忆和存储机制
+- ai目前具有一定的学习能力以减少对使用者来说不必要的总结
 
 ### v1.3.0 (2026-02-06)
 - 新增AI追问的"双模式"切换功能
